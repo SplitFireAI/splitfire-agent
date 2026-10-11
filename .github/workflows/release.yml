@@ -48,3 +48,32 @@ jobs:
           gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
             || gh release view "$GITHUB_REF_NAME" >/dev/null
           gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
+
+  checksums:
+    name: Publish checksums.txt
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "splitfire-agent-*" \
+            --dir artifacts/
+
+      - name: Generate checksums.txt
+        run: |
+          cd artifacts
+          sha256sum splitfire-agent-* > checksums.txt
+          cat checksums.txt
+
+      - name: Upload checksums.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            artifacts/checksums.txt --clobber

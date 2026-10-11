@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: SplitFireAI.splitfire-agent
+PackageVersion: @VERSION@
+PackageLocale: en-US
+Publisher: SplitFireAI
+PublisherUrl: https://github.com/SplitFireAI
+PublisherSupportUrl: https://github.com/@REPO@/issues
+PackageName: SplitFire Agent
+PackageUrl: https://github.com/@REPO@
+License: MIT OR Apache-2.0
+LicenseUrl: https://github.com/@REPO@/blob/main/LICENSE
+ShortDescription: Music-domain ACP agent for theory, production, industry, culture and live shows.
+Description: |-
+  SplitFire Agent is a music-domain ACP-compatible coding agent backed by any
+  OpenAI-compatible chat completions API. It covers music theory, production,
+  industry knowledge, culture, and live shows, and integrates with editors such
+  as Zed and VS Code via the Agent Client Protocol (ACP).
+Moniker: splitfire-agent
+Tags:
+  - ai
+  - acp
+  - agent
+  - music
+  - inference
+  - llm
+  - splitfire
+ReleaseNotesUrl: https://github.com/@REPO@/releases/tag/@TAG@
+Documentations:
+  - DocumentLabel: Readme
+    DocumentUrl: https://github.com/@REPO@/blob/main/README.md
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
