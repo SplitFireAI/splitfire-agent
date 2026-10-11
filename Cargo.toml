@@ -24,9 +24,9 @@ required-features = ["cli"]
 
 [dependencies]
 # Onde Agent Platform: the ACP server, terminal UI and MCP layer, from the onde-ed workspace.
-ed-acp = { version = "1.1.0" }
-ed-acp-tui = { version = "1.1.0", optional = true }
-ed-mcp = { version = "1.1.0" }
+ed-acp = { version = "1.2.2" }
+ed-acp-tui = { version = "1.2.2", optional = true }
+ed-mcp = { version = "1.2.2" }
 agent-client-protocol = "2.2"
 anyhow = "1.0.104"
 async-trait = "0.1"
@@ -41,6 +41,6 @@ tracing = "0.1.44"
 uuid = { version = "1.27.0", features = ["v4"] }
 
 [dev-dependencies]
-ed-acp-testkit = { version = "1.1.0" }
+ed-acp-testkit = { version = "1.2.2" }
 base64 = "0.23.1"
 hound = "3.5.1"
