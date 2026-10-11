@@ -635,9 +635,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp"
-version = "1.1.0"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3acecd5520efb32a7bebd6d02b865de3d785ba4ebd32ede8a4f595ae4e5e9e79"
+checksum = "ed473861f41489b1d7489d6ac52d5901dac094e5667d614a41f3207639a7cfac"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -658,9 +658,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp-testkit"
-version = "1.1.0"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9a99f0cd1c4c72a2235edc42f03c5b8a7b0d18e29d0064c467a1120423af252"
+checksum = "17dfc37dbdae642048e9d6359bddefb013ce88ba694a590934359e0bfd14f246"
 dependencies = [
  "serde_json",
  "tokio",
@@ -669,9 +669,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp-tui"
-version = "1.1.0"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1241d2bc5655c8c880f3dbd57746d29cbc25fe616869346583d73ffbf8821b73"
+checksum = "0bc0f4306887815c70238e61bc45bfcc46ec5986179e48e5176de28db30a5001"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -683,9 +683,9 @@ dependencies = [
 
 [[package]]
 name = "ed-mcp"
-version = "1.1.0"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "578adbef751312c45b43fdd8615da51bc45adc7ddf039f9dd2030369e2b07ff6"
+checksum = "3ab72e819848e7a6f0f0b0f348d55ece76190f86ffc16dab5bc3d6bfe8e5c167"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -717,7 +717,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1844,7 +1844,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2144,7 +2144,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2201,7 +2201,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3301,7 +3301,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
