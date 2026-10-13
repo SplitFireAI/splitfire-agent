@@ -6,6 +6,13 @@ use agent_client_protocol::schema::v1::{
     AvailableCommand, AvailableCommandInput, UnstructuredCommandInput,
 };
 
+/// The sentence the "no stems" paragraph starts and ends with. A host that embeds the agent
+/// swaps this whole paragraph for its own stems guidance by finding these two markers
+/// ([`crate::embed::trim::replace_no_stems`]), so the prompt below and the replacement must
+/// stay in step — they share these constants to make that impossible to get wrong.
+pub const NO_STEMS_START: &str = "Stem separation is not available in this session.";
+pub const NO_STEMS_END: &str = "file or shell tools.";
+
 pub fn system_prompt(
     surface: &str,
     cwd: &Path,
@@ -33,11 +40,16 @@ pub fn system_prompt(
          vocals, other; guitar and piano with the 6-stem model). It runs locally and can take \
          minutes. When it finishes, tell the user where the stem files are. Separate only music \
          the user says they have the right to work with."
+            .to_string()
     } else {
-        "\nStem separation is not available in this session. If the user asks for stems, tell \
-         them it needs the `demucs` command installed and on PATH (or SPLITFIRE_DEMUCS_BIN \
-         pointing at it), and that the session must be restarted afterwards. Do not pretend to \
-         separate anything, and do not offer a workaround with the file or shell tools."
+        // Bounded by NO_STEMS_START / NO_STEMS_END so an embedding host can find and replace
+        // the whole paragraph; keep those markers as the first and last words of it.
+        format!(
+            "\n{NO_STEMS_START} If the user asks for stems, tell \
+             them it needs the `demucs` command installed and on PATH (or SPLITFIRE_DEMUCS_BIN \
+             pointing at it), and that the session must be restarted afterwards. Do not pretend \
+             to separate anything, and do not offer a workaround with the {NO_STEMS_END}"
+        )
     };
     format!(
         "You are SplitFire, a music assistant for musicians, producers, engineers, songwriters \
