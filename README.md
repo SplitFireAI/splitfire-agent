@@ -59,6 +59,34 @@ as `mcp__<server>__<tool>`, ask for permission unless the server marks them read
 progress into the tool call, and are cancelled when you cancel the turn. A server that fails to
 start is skipped.
 
+## Embedding
+
+A sandboxed app (an App Store build) can't launch the agent as a subprocess, so it runs it
+in-process: it serves [`SplitFire`] with `ed_acp::serve` over an in-memory channel and talks to
+it as a regular ACP client. The app-neutral half of that — the client, sessions, permissions,
+the key store — lives in the published [`ed-acp-tauri`](https://crates.io/crates/ed-acp-tauri)
+crate. The SplitFire-only pieces live here, behind the off-by-default `embed` feature:
+
+```toml
+splitfire-agent = { version = "1.2", default-features = false, features = ["embed"] }
+ed-acp-tauri = "1.3"
+ed-acp = "1.3"
+```
+
+`splitfire_agent::embed` has no `tauri` dependency; anything that needs the app's identifier
+takes it as a `&str`:
+
+- `embed::fetch_key(url, access_token, app_identifier)` asks the SplitFire API for the signed-in
+  user's Onde key, rejecting with `SIGN_IN_REQUIRED` or `UNAVAILABLE`.
+- `embed::splitfire_mcp(url, access_token, app_identifier)` builds the SplitFire API's MCP server
+  for a session (nothing without a token).
+- `embed::trim` drops `run_command` from the toolsets (`without_commands`) and swaps the stems
+  paragraph (`replace_no_stems`) for a profile that runs where it can't start processes, e.g.
+  iOS.
+
+All embedding apps must resolve a single `ed-acp` 1.3.x, so an `Arc<dyn Profile>` from this crate
+matches the one `ed-acp-tauri` expects.
+
 ## Install and set up
 
 ```sh

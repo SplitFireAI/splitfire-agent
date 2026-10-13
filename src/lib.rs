@@ -6,6 +6,8 @@
 //! a subprocess. Build with `default-features = false` to leave out the terminal UI.
 
 mod audio;
+#[cfg(feature = "embed")]
+pub mod embed;
 pub mod profile;
 mod prompt;
 mod theory;
