@@ -50,6 +50,14 @@ prompt tells you how large the download is. If `demucs` is missing or fails to s
 logs one line and carries on without it. An MCP server named `demucs` supplied by your editor
 takes precedence. `SPLITFIRE_MCP_DEMUCS=off` disables it.
 
+Apps that embed SplitFire decide what stems mean the same way. They pass a `demucs` MCP server of
+their own in `session/new`, or return no built-in servers from their `Profile` and write their own
+stems guidance. The SplitFire AI Audio Separator supplies its own executable in `--mcp` mode on
+its on-device engine; KaroKowe Jam and KaroKowe Karaoke supply none and point users at their in-app flows. The stem
+hooks only check the tool name `mcp__demucs__separate_stems` and the `list_models` and
+`separate_stems` result shapes (`structuredContent.models[]{id,size_mb,cached}` and
+`structuredContent.stems[].path`).
+
 Separate only music you have the right to work with.
 
 ### Other MCP servers
