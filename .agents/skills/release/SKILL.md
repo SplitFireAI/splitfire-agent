@@ -14,11 +14,30 @@ How to cut a `splitfire-agent` release. Releases are driven by git tags. Pushing
   (darwin-arm64/x64, linux-x64/arm64, windows-x64) and publishes a GitHub release
   with auto-generated notes and the archives attached.
 - `.github/workflows/release-crates.yml` — runs `cargo publish --locked` to push
-  the crate to crates.io (needs the `CARGO_REGISTRY_TOKEN` repo secret).
+  the crate to crates.io, authenticated by **trusted publishing**: a GitHub OIDC
+  token is exchanged for a short-lived crates.io token. There is no
+  `CARGO_REGISTRY_TOKEN` secret to store or rotate.
 
 Branch model: work lands on `development` (via PRs); `main` is the release branch;
 every tag points at a commit that is on `main`. Previous tags were plain annotated
 (not GPG-signed) tags authored by the maintainer, message `Release vX.Y.Z`.
+
+---
+
+## 0. One-time setup: the trusted publisher
+
+Trusted publishing needs a publisher registered on crates.io **before** the first
+tagged run. The crate must already be on crates.io (a first-ever publish still
+needs a manual `cargo login` + `cargo publish`), and you must be a crate owner.
+Then: crate page → **Settings → Trusted Publishing → Add → GitHub**:
+
+- Repository owner: `SplitFireAI`
+- Repository name: `splitfire-agent`
+- Workflow filename: `release-crates.yml` (the bare filename, not a path)
+- Environment: leave blank unless the job also declares `environment:`
+
+The workflow filename is part of the trust claim, so renaming the workflow breaks
+publishing until the crates.io config is updated to match — keep the two in sync.
 
 ---
 
@@ -125,6 +144,9 @@ curl -s https://crates.io/api/v1/crates/splitfire-agent | python3 -Ic \
   already on crates.io, so no dependency needs publishing first. To publish manually
   instead of via CI: `cargo login` once (token from crates.io/settings/tokens), then
   `cargo publish --locked` from the tagged commit.
+- `crates-io-auth-action` is pinned to `v1.0.5` deliberately: the action repo has
+  no moving `v1` tag (only `v1.0.x`), so the `@v1` shown in the crates.io docs
+  example fails to resolve. Bump the pin when a newer release lands.
 - If a platform build fails after the tag is pushed, fix the cause and re-run the
   failed jobs (`gh run rerun <run-id> --failed`); the release-create step tolerates
   an already-existing release and `--clobber`s assets, so re-runs are safe.
