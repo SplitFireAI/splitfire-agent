@@ -25,13 +25,19 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - run: cargo build --release --locked --bin splitfire-agent --target ${{ matrix.target }}
+      # The exe must not import the VC++ runtime DLLs (see .cargo/config.toml), or it fails to
+      # load on a machine without the redistributable.
+      - name: Check static CRT
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: ./packaging/windows/check-static-crt.ps1 -Path target/${{ matrix.target }}/release/splitfire-agent.exe
       - name: Package archive
         shell: bash
         run: |
-          BIN=target/${{ matrix.target }}/release/splitfire-agent
           ARCHIVE=splitfire-agent-${{ matrix.name }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a "$ARCHIVE.zip" "$BIN.exe"
+            # exe at the zip root, matching RelativeFilePath in the winget manifest
+            (cd "target/${{ matrix.target }}/release" && 7z a "$GITHUB_WORKSPACE/$ARCHIVE.zip" splitfire-agent.exe)
             echo "asset=$ARCHIVE.zip" >> "$GITHUB_ENV"
           else
             tar -czf "$ARCHIVE.tar.gz" -C "target/${{ matrix.target }}/release" splitfire-agent

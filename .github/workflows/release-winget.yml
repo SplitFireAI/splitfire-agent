@@ -135,11 +135,20 @@ jobs:
         shell: pwsh
         run: Invoke-WebRequest -Uri "https://aka.ms/wingetcreate/latest" -OutFile wingetcreate.exe
 
-      # File the tracking issue first, as a separate identity (WINGET_ISSUE_TOKEN),
-      # so the manifest PR that wingetcreate opens next can resolve it. winget-pkgs
-      # asks submitters to link an issue; filing it here means the "Set the winget
-      # PR body" step can tick "Linked to an issue" and add "Resolves #N".
-      - name: File the winget tracking issue
+      # winget-pkgs convention: file the "please add/update this package"
+      # Package Request issue *first*, then open the manifest PR that fulfils
+      # it with "Resolves #N". The other way round reads as a request and its
+      # fix posted seconds apart.
+      #
+      # The issue and the PR are authored by two separate PATs, both with
+      # public_repo scope on microsoft/winget-pkgs (fork + open issues/PRs):
+      #   WINGET_ISSUE_TOKEN  files the Package Request issue.
+      #   WINGET_PR_TOKEN     opens the manifest PR. It also needs read:org and
+      #                       read:discussion: the "Set the winget PR body" step
+      #                       calls `gh pr edit`, whose GraphQL query resolves
+      #                       org/team and discussion fields and fails with a
+      #                       scope error without them.
+      - name: File the winget Package Request issue
         id: issue
         shell: bash
         env:
@@ -148,38 +157,43 @@ jobs:
           set -euo pipefail
 
           if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::error::WINGET_ISSUE_TOKEN is not set. It needs a PAT that can open issues on microsoft/winget-pkgs."
+            echo "::error::WINGET_ISSUE_TOKEN is not set. It needs a PAT (public_repo) for the account that should author the Package Request issue."
             exit 1
           fi
 
           VERSION="${{ steps.release.outputs.version }}"
           TAG="${{ steps.release.outputs.tag }}"
-          BASE="https://github.com/${REPO}/releases/download/${TAG}"
+          INSTALLER="https://github.com/${REPO}/releases/download/${TAG}/splitfire-agent-windows-x64.zip"
 
-          if [ "${{ steps.exists.outputs.found }}" = "false" ]; then
-            TITLE="New package: ${PACKAGE_IDENTIFIER} version ${VERSION}"
-            ACTION="Add"
-          else
-            TITLE="Update: ${PACKAGE_IDENTIFIER} to version ${VERSION}"
-            ACTION="Update"
-          fi
-
-          BODY=$(cat <<EOF
-          ${ACTION} ${PACKAGE_IDENTIFIER} to version ${VERSION}.
-
-          - Release: https://github.com/${REPO}/releases/tag/${TAG}
-          - Installer (x64): ${BASE}/splitfire-agent-windows-x64.zip
+          # winget-pkgs' Package Request is an issue *form*
+          # (.github/ISSUE_TEMPLATE/package_request.yml): the title must be
+          # "[Package Request]: ..." and the body has to carry the labelled
+          # fields below (Installer Url especially). A free-text body lands as
+          # Needs-Triage and can't be acted on.
+          ISSUE_BODY=$(cat <<EOF
+          Download Page Url: https://github.com/${REPO}/releases/tag/${TAG}
+          Publisher: SplitFireAI
+          Package Name: SplitFire Agent
+          Description: Music-domain ACP agent for theory, production, industry, culture and live shows.
+          Package Version: ${VERSION}
+          Installer Url: ${INSTALLER}
           EOF
           )
 
           ISSUE_URL=$(gh issue create \
             --repo microsoft/winget-pkgs \
-            --title "$TITLE" \
-            --body "$BODY")
+            --title "[Package Request]: ${PACKAGE_IDENTIFIER} ${VERSION}" \
+            --body "$ISSUE_BODY")
 
-          echo "Filed ${ISSUE_URL}"
-          ISSUE_NUMBER="${ISSUE_URL##*/}"
-          echo "issue_number=${ISSUE_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "Opened issue ${ISSUE_URL}"
+          echo "issue_url=${ISSUE_URL}" >> "$GITHUB_OUTPUT"
+          echo "issue_number=${ISSUE_URL##*/}" >> "$GITHUB_OUTPUT"
+
+      # Leave a gap so the issue and the PR aren't posted seconds apart.
+      - name: Wait before opening the PR
+        if: steps.issue.outputs.issue_number != ''
+        shell: bash
+        run: sleep $(( RANDOM % 61 + 150 ))
 
       - name: Submit new package
         id: submit_new
@@ -189,7 +203,7 @@ jobs:
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
         run: |
           if (-not $env:WINGET_CREATE_GITHUB_TOKEN) {
-            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo scope so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
+            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org and read:discussion scopes so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
           }
 
           $version = "${{ steps.release.outputs.version }}"
@@ -223,7 +237,7 @@ jobs:
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
         run: |
           if (-not $env:WINGET_CREATE_GITHUB_TOKEN) {
-            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo scope so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
+            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org and read:discussion scopes so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
           }
 
           $tag     = "${{ steps.release.outputs.tag }}"
@@ -289,7 +303,7 @@ jobs:
             "- [x] Have you checked that there aren't other open [pull requests](https://github.com/microsoft/winget-pkgs/pulls) for the same manifest update/change?" \
             "- [x] Have you validated your manifest locally with \`winget validate --manifest <path>\`?" \
             "- [x] Have you tested your manifest locally with \`winget install --manifest <path>\`?" \
-            "- [x] Does your manifest conform to the [1.6 schema](https://github.com/microsoft/winget-pkgs/tree/master/doc/manifest/schema/1.6.0)?" \
+            "- [x] Does your manifest conform to the [1.12 schema](https://github.com/microsoft/winget-pkgs/tree/master/doc/manifest/schema/1.12.0)?" \
             "- [x] This PR is linked to an issue.")
 
           gh pr edit "$PR_NUMBER" \

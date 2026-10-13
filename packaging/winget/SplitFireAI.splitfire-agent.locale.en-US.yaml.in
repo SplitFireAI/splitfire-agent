@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
 PackageIdentifier: SplitFireAI.splitfire-agent
 PackageVersion: @VERSION@
 PackageLocale: en-US
@@ -7,7 +7,7 @@ PublisherUrl: https://github.com/SplitFireAI
 PublisherSupportUrl: https://github.com/@REPO@/issues
 PackageName: SplitFire Agent
 PackageUrl: https://github.com/@REPO@
-License: MIT OR Apache-2.0
+License: Apache-2.0
 LicenseUrl: https://github.com/@REPO@/blob/main/LICENSE
 ShortDescription: Music-domain ACP agent for theory, production, industry, culture and live shows.
 Description: |-
@@ -29,4 +29,4 @@ Documentations:
   - DocumentLabel: Readme
     DocumentUrl: https://github.com/@REPO@/blob/main/README.md
 ManifestType: defaultLocale
-ManifestVersion: 1.6.0
+ManifestVersion: 1.12.0
