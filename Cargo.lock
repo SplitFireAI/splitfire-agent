@@ -2562,7 +2562,7 @@ dependencies = [
 
 [[package]]
 name = "splitfire-agent"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
