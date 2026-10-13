@@ -1,0 +1,30 @@
+name: release-crates
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required for the OIDC token exchange with crates.io
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      # Trusted publishing: no long-lived token to store or rotate. This action
+      # exchanges a GitHub OIDC token for a short-lived crates.io token (valid 30
+      # minutes) and revokes it in its post step.
+      #
+      # It only works if a trusted publisher is configured for this crate on
+      # crates.io naming SplitFireAI / splitfire-agent / this exact filename
+      # (release-crates.yml). The workflow filename is part of the trust check,
+      # so renaming this file breaks publishing until crates.io is updated too.
+      - uses: rust-lang/crates-io-auth-action@v1.0.5
+        id: auth
+      # Publishes the version in Cargo.toml to crates.io. crates.io is immutable:
+      # a version can only be published once (then yanked, never replaced), so the
+      # tag's Cargo.toml version must not already be on crates.io.
+      - run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
