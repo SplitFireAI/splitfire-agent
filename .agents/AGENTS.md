@@ -26,6 +26,7 @@ This crate holds only the *music* part of the agent. The ACP server, session/tur
 - `src/tools/`: `MusicTools` is one `Toolset` exposing six `theory_*` tools, `analyze_audio` and `list_separations`. All are read-only and never prompt for approval. New tools need an entry in `definitions()`, `handles()` and `describe()`.
 - `src/theory/` (pitch, interval, scale, chord, key, tempo) and `src/audio/` (symphonia decode, loudness/tempo/key analysis) are the pure computation behind the tools. The design principle is that the model calls these instead of recalling answers, so results must be exact (correct enharmonic spelling, e.g. C# major has E# and B#).
 - `src/lib.rs` vs `src/main.rs`: the crate is both a library (`Profile` for hosts that embed the agent over an in-memory channel with `ed_acp::serve`) and the `splitfire-agent` binary. The `cli` feature (default) pulls in `ed-acp-tui` and the MCP test stub; build with `--no-default-features` to check the embeddable library alone.
+- `src/embed/` (behind the off-by-default `embed` feature) is the SplitFire-only glue a Tauri host needs beside the published `ed-acp-tauri` crate: `embed::fetch_key` (SplitFire's `/agent/key`), `embed::splitfire_mcp` (the SplitFire API's MCP server), and `embed::trim` (drop `run_command` and swap the stems paragraph on platforms that can't start processes). It has no `tauri` dependency — the app identifier comes in as a `&str`. The `NO_STEMS_START`/`NO_STEMS_END` markers `embed::trim::replace_no_stems` keys off are defined in `src/prompt.rs`, which writes the paragraph, so the two can't drift.
 - The binary has three modes: TUI when stdin is a terminal; ACP over stdio with `--acp` or when stdin is not a terminal; plus `--setup` / `--list-models`. The TUI is itself an ACP client that spawns `splitfire-agent --acp` as a subprocess.
 
 ## Tests
@@ -35,7 +36,7 @@ Integration tests run the real binary against a scripted mock model and a test M
 ## Conventions
 
 - Edition 2024. Per `.agents/skills/rust-coding-standard`: no `.unwrap()`/`.expect()` outside `#[cfg(test)]`, don't silently discard errors with `let _ =`.
-- `registry/` holds the ACP registry submission (`agent.json`) (its `version` is currently 1.0.0, behind `Cargo.toml`'s 1.1.0, so check it when releasing).
+- `registry/` holds the ACP registry submission (`agent.json`); keep its `version` in step with `Cargo.toml` when releasing (both at 1.2.0).
 
 ## Remembered notes
 
