@@ -25,13 +25,19 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - run: cargo build --release --locked --bin splitfire-agent --target ${{ matrix.target }}
+      # The exe must not import the VC++ runtime DLLs (see .cargo/config.toml), or it fails to
+      # load on a machine without the redistributable.
+      - name: Check static CRT
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: ./packaging/windows/check-static-crt.ps1 -Path target/${{ matrix.target }}/release/splitfire-agent.exe
       - name: Package archive
         shell: bash
         run: |
-          BIN=target/${{ matrix.target }}/release/splitfire-agent
           ARCHIVE=splitfire-agent-${{ matrix.name }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a "$ARCHIVE.zip" "$BIN.exe"
+            # exe at the zip root, matching RelativeFilePath in the winget manifest
+            (cd "target/${{ matrix.target }}/release" && 7z a "$GITHUB_WORKSPACE/$ARCHIVE.zip" splitfire-agent.exe)
             echo "asset=$ARCHIVE.zip" >> "$GITHUB_ENV"
           else
             tar -czf "$ARCHIVE.tar.gz" -C "target/${{ matrix.target }}/release" splitfire-agent
@@ -48,3 +54,32 @@ jobs:
           gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
             || gh release view "$GITHUB_REF_NAME" >/dev/null
           gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
+
+  checksums:
+    name: Publish checksums.txt
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "splitfire-agent-*" \
+            --dir artifacts/
+
+      - name: Generate checksums.txt
+        run: |
+          cd artifacts
+          sha256sum splitfire-agent-* > checksums.txt
+          cat checksums.txt
+
+      - name: Upload checksums.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            artifacts/checksums.txt --clobber
