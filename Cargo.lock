@@ -635,9 +635,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp"
-version = "1.3.0"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "399009729e0200f68a63bc2a38123c2dd8b962e71abcf06793f660b93ed554f3"
+checksum = "72875c7df466beeec849ab697b5715c74306c370fcdb596ef076c25f5a4581d4"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -658,9 +658,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp-testkit"
-version = "1.3.0"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1705037211a9e22b02f62fda7ac6bd8bcc25e07a0ba526477c638ec6584eeb18"
+checksum = "3005228fa97ec108b329ece3cba058c7d1f63edd9cbe2fa81e3f4166130b1491"
 dependencies = [
  "serde_json",
  "tokio",
@@ -669,9 +669,9 @@ dependencies = [
 
 [[package]]
 name = "ed-acp-tui"
-version = "1.3.0"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9667be1b834f4ca1d5ae55730e4b69376d9cd2949b9cc3deead3ea6130761b9f"
+checksum = "9e44e00e1640efdced53163f22128ecda46f2ef02ab8796048c94df69a3720e7"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -683,9 +683,9 @@ dependencies = [
 
 [[package]]
 name = "ed-mcp"
-version = "1.3.0"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c91065ba526284ae3dce156a932343ba7409351ef93ea6a4181fdc3287a7a5bb"
+checksum = "09f7614c7e6082ff71160d931394662b00bb68e480d97c19cf6f66eb7b1579e3"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -2592,7 +2592,7 @@ dependencies = [
 
 [[package]]
 name = "splitfire-agent"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "agent-client-protocol",
  "anyhow",
@@ -2917,7 +2917,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
