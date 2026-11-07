@@ -37,6 +37,7 @@ Integration tests run the real binary against a scripted mock model and a test M
 
 - Edition 2024. Per `.agents/skills/rust-coding-standard`: no `.unwrap()`/`.expect()` outside `#[cfg(test)]`, don't silently discard errors with `let _ =`.
 - `registry/` holds the ACP registry submission (`agent.json`); keep its `version` in step with `Cargo.toml` when releasing (both at 1.2.0).
+- **winget:** `release-winget.yml` files the Package Request issue with `WINGET_ISSUE_TOKEN` (`public_repo`), then opens the manifest PR with `WINGET_PR_TOKEN`, a classic PAT with `public_repo`, `read:org`, `read:discussion`, and `workflow`. The first three cover forking and the `gh pr edit` GraphQL query. `workflow` is there because wingetcreate fast-forwards the token owner's fork before it branches, and GitHub refuses that sync once an upstream commit changes a file under `.github/workflows`. "The forked repository could not be synced with the upstream commits" means the PAT lacks `workflow`; add it, or sync the fork by hand and rerun.
 
 ## Remembered notes
 
