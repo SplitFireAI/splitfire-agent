@@ -148,6 +148,10 @@ jobs:
       #                       calls `gh pr edit`, whose GraphQL query resolves
       #                       org/team and discussion fields and fails with a
       #                       scope error without them.
+      #                       WINGET_PR_TOKEN also needs workflow: wingetcreate fast-forwards the token
+      #                       owner's fork before it branches, and GitHub refuses that sync when an
+      #                       upstream commit changed a file under .github/workflows (seen on sigit
+      #                       v1.7.10).
       - name: File the winget Package Request issue
         id: issue
         shell: bash
@@ -203,7 +207,7 @@ jobs:
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
         run: |
           if (-not $env:WINGET_CREATE_GITHUB_TOKEN) {
-            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org and read:discussion scopes so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
+            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org, read:discussion, and workflow scopes so wingetcreate can sync its fork of microsoft/winget-pkgs and open the manifest PR."
           }
 
           $version = "${{ steps.release.outputs.version }}"
@@ -237,7 +241,7 @@ jobs:
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
         run: |
           if (-not $env:WINGET_CREATE_GITHUB_TOKEN) {
-            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org and read:discussion scopes so wingetcreate can fork microsoft/winget-pkgs and open the manifest PR."
+            Write-Error "WINGET_PR_TOKEN is not set. It needs a PAT with public_repo, read:org, read:discussion, and workflow scopes so wingetcreate can sync its fork of microsoft/winget-pkgs and open the manifest PR."
           }
 
           $tag     = "${{ steps.release.outputs.tag }}"
