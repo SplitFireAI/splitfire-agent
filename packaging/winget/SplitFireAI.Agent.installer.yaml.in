@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
-PackageIdentifier: SplitFireAI.splitfire-agent
+PackageIdentifier: SplitFireAI.Agent
 PackageVersion: @VERSION@
 InstallerType: zip
 # `NestedInstallerType` and `NestedInstallerFiles` tell winget where to find
