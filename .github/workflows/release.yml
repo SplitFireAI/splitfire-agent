@@ -1,4 +1,4 @@
-name: release
+name: CLI Release GitHub
 
 on:
   push:
