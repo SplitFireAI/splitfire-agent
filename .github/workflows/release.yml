@@ -21,6 +21,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
+      # Fail fast when the tag and the manifests disagree: crates.io and the ACP registry listing
+      # would otherwise reject, or quietly carry, the wrong version.
+      - name: Check the tag matches Cargo.toml and registry/agent.json
+        shell: bash
+        run: |
+          crate=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          listed=$(grep -m1 '"version"' registry/agent.json | cut -d'"' -f4)
+          if [ "v$crate" != "$GITHUB_REF_NAME" ] || [ "$listed" != "$crate" ]; then
+            echo "tag $GITHUB_REF_NAME, Cargo.toml $crate, registry/agent.json $listed: they must all match"
+            exit 1
+          fi
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
