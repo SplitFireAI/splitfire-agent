@@ -1,4 +1,4 @@
-name: release-crates
+name: CLI Release Crates.io
 
 on:
   push:
