@@ -27,6 +27,8 @@ This crate holds only the *music* part of the agent. The ACP server, session/tur
 - `src/theory/` (pitch, interval, scale, chord, key, tempo) and `src/audio/` (symphonia decode, loudness/tempo/key analysis) are the pure computation behind the tools. The design principle is that the model calls these instead of recalling answers, so results must be exact (correct enharmonic spelling, e.g. C# major has E# and B#).
 - `src/lib.rs` vs `src/main.rs`: the crate is both a library (`Profile` for hosts that embed the agent over an in-memory channel with `ed_acp::serve`) and the `splitfire-agent` binary. The `cli` feature (default) pulls in `ed-acp-tui` and the MCP test stub; build with `--no-default-features` to check the embeddable library alone.
 - `src/embed/` (behind the off-by-default `embed` feature) is the SplitFire-only glue a Tauri host needs beside the published `ed-acp-tauri` crate: `embed::fetch_key` (SplitFire's `/agent/key`), `embed::splitfire_mcp` (the SplitFire API's MCP server), and `embed::trim` (drop `run_command` and swap the stems paragraph on platforms that can't start processes). It has no `tauri` dependency — the app identifier comes in as a `&str`. The `NO_STEMS_START`/`NO_STEMS_END` markers `embed::trim::replace_no_stems` keys off are defined in `src/prompt.rs`, which writes the paragraph, so the two can't drift.
+- `src/embed/provider.rs`: `on_device(env)` / `use_on_device(env)` flip `SPLITFIRE_PROVIDER` in the stored `env` file for a host's settings switch (the agent re-reads that file on every `session/new`/`session/load`, so no restart). `use_on_device` drops `SPLITFIRE_MODEL` (so the per-platform local default applies) but keeps `ONDE_API_KEY`. Back to Cloud is `fetch_key` + `ed_acp_tauri::set_api_key`.
+- The `local` cargo feature (off by default) enables `ed-acp/local`, i.e. `Provider::Local` on onde. It builds mistral.rs, so CI has a separate macOS `local` job (with `MISTRALRS_METAL_PRECOMPILE=0`); the main matrix stays cloud-only. `ed_acp_tauri::status()` reports `has_key: false` for the local provider, so hosts correct that themselves.
 - The binary has three modes: TUI when stdin is a terminal; ACP over stdio with `--acp` or when stdin is not a terminal; plus `--setup` / `--list-models`. The TUI is itself an ACP client that spawns `splitfire-agent --acp` as a subprocess.
 
 ## Tests
@@ -36,7 +38,7 @@ Integration tests run the real binary against a scripted mock model and a test M
 ## Conventions
 
 - Edition 2024. Per `.agents/skills/rust-coding-standard`: no `.unwrap()`/`.expect()` outside `#[cfg(test)]`, don't silently discard errors with `let _ =`.
-- `registry/` holds the ACP registry submission (`agent.json`); keep its `version` in step with `Cargo.toml` when releasing (both at 1.2.0).
+- `registry/` holds the ACP registry submission (`agent.json`); keep its `version` in step with `Cargo.toml` when releasing.
 - **winget:** `release-winget.yml` files the Package Request issue with `WINGET_ISSUE_TOKEN` (`public_repo`), then opens the manifest PR with `WINGET_PR_TOKEN`, a classic PAT with `public_repo`, `read:org`, `read:discussion`, and `workflow`. The first three cover forking and the `gh pr edit` GraphQL query. `workflow` is there because wingetcreate fast-forwards the token owner's fork before it branches, and GitHub refuses that sync once an upstream commit changes a file under `.github/workflows`. "The forked repository could not be synced with the upstream commits" means the PAT lacks `workflow`; add it, or sync the fork by hand and rerun.
 
 ## Remembered notes

@@ -681,3 +681,30 @@ async fn acp_tool_metadata_paths_are_absolute() {
 
     std::fs::remove_dir_all(&workdir).ok();
 }
+
+/// `SPLITFIRE_PROVIDER=local` needs no key and no endpoint: `--list-models` answers from onde's
+/// on-device catalog without touching the network. A build without the `local` feature has no
+/// catalog, so the list is empty rather than an error.
+#[test]
+fn local_provider_needs_no_key() {
+    let data_dir = temp_dir("sf-local");
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_splitfire-agent"))
+        .arg("--list-models")
+        .env_remove("ONDE_API_KEY")
+        .env_remove("OPENAI_API_KEY")
+        .env("SPLITFIRE_PROVIDER", "local")
+        .env("SPLITFIRE_DATA_DIR", &data_dir)
+        .output()
+        .expect("run splitfire-agent --list-models");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let listed = String::from_utf8_lossy(&output.stdout);
+    #[cfg(feature = "local")]
+    assert!(listed.contains("Qwen"), "{listed}");
+    #[cfg(not(feature = "local"))]
+    assert!(listed.trim().is_empty(), "{listed}");
+    std::fs::remove_dir_all(&data_dir).ok();
+}

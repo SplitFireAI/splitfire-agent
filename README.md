@@ -76,9 +76,9 @@ the key store — lives in the published [`ed-acp-tauri`](https://crates.io/crat
 crate. The SplitFire-only pieces live here, behind the off-by-default `embed` feature:
 
 ```toml
-splitfire-agent = { version = "1.2", default-features = false, features = ["embed"] }
-ed-acp-tauri = "1.3"
-ed-acp = "1.3"
+splitfire-agent = { version = "1.3", default-features = false, features = ["embed"] }
+ed-acp-tauri = "1.5"
+ed-acp = "1.5"
 ```
 
 `splitfire_agent::embed` has no `tauri` dependency; anything that needs the app's identifier
@@ -88,11 +88,14 @@ takes it as a `&str`:
   user's Onde key, rejecting with `SIGN_IN_REQUIRED` or `UNAVAILABLE`.
 - `embed::splitfire_mcp(url, access_token, app_identifier)` builds the SplitFire API's MCP server
   for a session (nothing without a token).
+- `embed::provider` switches the agent between Onde Cloud and [on-device inference](#on-device-inference):
+  `on_device(env)` reports which is active and `use_on_device(env)` stores the choice. Going back
+  to Cloud is `fetch_key` plus `ed_acp_tauri::set_api_key`.
 - `embed::trim` drops `run_command` from the toolsets (`without_commands`) and swaps the stems
   paragraph (`replace_no_stems`) for a profile that runs where it can't start processes, e.g.
   iOS.
 
-All embedding apps must resolve a single `ed-acp` 1.3.x, so an `Arc<dyn Profile>` from this crate
+All embedding apps must resolve a single `ed-acp` 1.5.x, so an `Arc<dyn Profile>` from this crate
 matches the one `ed-acp-tauri` expects.
 
 ## Install and set up
@@ -154,7 +157,8 @@ Token usage is reported against `SPLITFIRE_CONTEXT_WINDOW`.
 |---------|---------|---|
 | `ONDE_API_KEY` | from the config `env` file | `app-id:app-secret`; required |
 | `SPLITFIRE_BASE_URL` | `https://cloud.ondeinference.com/v1` | override the OpenAI-compatible endpoint |
-| `SPLITFIRE_MODEL` | `onde-kkk` | default model |
+| `SPLITFIRE_PROVIDER` | `onde` | `onde`, `openai` or `local` (on-device; needs `--features local`) |
+| `SPLITFIRE_MODEL` | `onde-kkk` (on-device: Qwen3 4B Instruct 2507, Qwen3 1.7B on iOS/Android) | default model |
 | `SPLITFIRE_MODELS` | listed from `/models` | comma-separated list for the model picker |
 | `SPLITFIRE_YOLO` | unset | `1` skips permission prompts (the default for each thread's auto-approve toggle) |
 | `SPLITFIRE_CONTEXT_WINDOW` | `128000` | context size reported in `usage_update` |
@@ -166,6 +170,24 @@ Token usage is reported against `SPLITFIRE_CONTEXT_WINDOW`.
 | `RUST_LOG` | unset | logs go to stderr |
 
 `splitfire-agent --list-models` prints the models your endpoint serves.
+
+## On-device inference
+
+The agent can run its model on your own machine, offline and without a key. It is a cargo
+feature because it builds mistral.rs and its model runtime, so the release binaries stay
+cloud-only:
+
+```sh
+cargo install splitfire-agent --features local
+SPLITFIRE_PROVIDER=local splitfire-agent        # or pick "On-device" in `splitfire-agent --setup`
+```
+
+The first turn downloads the model (about 2.5 GB for Qwen3 4B Instruct 2507, about 1 GB for
+Qwen3 1.7B on phones) into the Hugging Face cache (`HF_HOME`). Only models from onde's
+tool-calling catalog are accepted, since the agent depends on tool calls. The on-device model
+reads text only: images and audio attachments reach it as a note naming the file, and
+`analyze_audio` still works from the path. A build without the feature accepts
+`SPLITFIRE_PROVIDER=local` but every turn fails saying how to enable it.
 
 ## Development
 
