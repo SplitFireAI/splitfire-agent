@@ -1,9 +1,10 @@
 //! The SplitFire-only pieces a Tauri host needs beside [`ed-acp-tauri`], which carries the
 //! app-neutral half of embedding (the in-process ACP client, sessions, permissions, the key
-//! store). These three stay here because they are specific to SplitFire's backend and apps:
+//! store). These four stay here because they are specific to SplitFire's backend and apps:
 //!
 //! - [`fetch_key`]: ask the SplitFire API for the signed-in user's Onde key.
 //! - [`splitfire_mcp`]: the SplitFire API's MCP server for a session.
+//! - [`provider`]: switch the agent between Onde Cloud and on-device inference.
 //! - [`trim`]: drop `run_command` and swap the stems guidance on iOS.
 //!
 //! Nothing here depends on `tauri`. Anything that needed an `AppHandle` in the old
@@ -12,6 +13,7 @@
 //!
 //! [`ed-acp-tauri`]: https://crates.io/crates/ed-acp-tauri
 
+pub mod provider;
 pub mod trim;
 
 use ed_acp::agent_client_protocol::schema::v1::{HttpHeader, McpServer, McpServerHttp};

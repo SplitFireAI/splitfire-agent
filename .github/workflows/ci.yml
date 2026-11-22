@@ -24,3 +24,18 @@ jobs:
       - run: cargo fmt -- --check
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
+
+  # On-device inference builds mistral.rs, so it gets its own job instead of slowing the matrix.
+  # The Metal shader precompile is off: it needs a Metal toolchain the runner may not have.
+  local:
+    runs-on: macos-latest
+    env:
+      MISTRALRS_METAL_PRECOMPILE: "0"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --locked --features embed,local --all-targets -- -D warnings
+      - run: cargo test --locked --features local --test acp_integration local_provider_needs_no_key

@@ -11,7 +11,7 @@ use std::io::IsTerminal;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use ed_acp::{LlmConfig, ServeOptions, cli};
+use ed_acp::{LlmConfig, Provider, ServeOptions, cli};
 use ed_acp_tui::TuiConfig;
 
 use splitfire_agent::{INFO, SplitFire};
@@ -28,6 +28,7 @@ Usage: splitfire-agent [--acp] [--yolo] [--list-models] [--root <path>...] [--se
   --version      print the version
 
 Environment: ONDE_API_KEY (required unless stored by --setup), SPLITFIRE_BASE_URL,
+SPLITFIRE_PROVIDER (onde, openai or local: on-device, needs a build with `--features local`),
 SPLITFIRE_MODEL, SPLITFIRE_MODELS, SPLITFIRE_YOLO, SPLITFIRE_DATA_DIR, SPLITFIRE_CONTEXT_WINDOW,
 SPLITFIRE_DEMUCS_BIN, SPLITFIRE_MCP_DEMUCS=off, SPLITFIRE_STEMS_DIR
 ";
@@ -84,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
         ed_acp::serve_stdio(Arc::new(SplitFire), opts).await?;
     } else {
         let llm = LlmConfig::from_env(&INFO.env);
-        if llm.api_key.is_none() {
+        if llm.api_key.is_none() && llm.provider != Provider::Local {
             // Exit 0: winget's validator launches the bare exe on a console and expects success.
             eprintln!(
                 "No Onde API key configured. Set ONDE_API_KEY or run `{} --setup`.",
